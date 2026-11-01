@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.angular/
+out-tsc/
+bin/
+obj/
+.vs/
+*.user
+*.pubxml
+PublishProfiles/
+appsettings.json
+appsettings.*.json
+!appsettings.example.json
+.replit*
+.agents/
+.conversation/
+attached_assets/

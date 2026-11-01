@@ -1,0 +1,80 @@
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --background: #0b0c10;
+  --surface: #11131a;
+  --surface-subtle: #0e1016;
+  --card: #12151c;
+  --card-hover: #171a24;
+  --text: #f3f3f8;
+  --muted: #a1a3b2;
+  --faint: #6f7180;
+  --line: #ffffff13;
+  --line-strong: #ffffff25;
+  --accent: #a39bff;
+  --cyan: #6bd8d0;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --background: #f8f8fb;
+  --surface: #f0f0f6;
+  --surface-subtle: #f3f3f8;
+  --card: #ffffff;
+  --card-hover: #fbfaff;
+  --text: #191924;
+  --muted: #656575;
+  --faint: #8b8b99;
+  --line: #16162516;
+  --line-strong: #1616252b;
+  --accent: #675bd0;
+  --cyan: #148c86;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  scroll-behavior: smooth;
+  scroll-padding-top: 82px;
+  background: var(--background);
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  color: var(--text);
+  background: var(--background);
+  font-family: 'Manrope', Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  transition: color .25s ease, background-color .25s ease;
+}
+
+button,
+input,
+textarea {
+  font-family: inherit;
+}
+
+button,
+a,
+input,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+
+::selection {
+  color: #081011;
+  background: var(--cyan);
+}

@@ -1,0 +1,30 @@
+<main class="admin-page">
+  <div class="admin-topbar">
+    <a class="admin-brand" routerLink="/">a<span>.</span><small>PORTFOLIO</small></a>
+    <a class="admin-back" routerLink="/">← Back to portfolio</a>
+  </div>
+  <section class="login-panel">
+    <div class="admin-kicker"><span class="admin-kicker-dot"></span>PRIVATE AREA</div>
+    <h1>Welcome back.</h1>
+    <p class="login-copy">Sign in to manage your portfolio content.</p>
+    <form [formGroup]="form" (ngSubmit)="signIn()">
+      <label for="admin-username">Username</label>
+      <input id="admin-username" type="text" formControlName="username" autocomplete="username" placeholder="Enter your username">
+      <label for="admin-password">Password</label>
+      <div class="password-input">
+        <input id="admin-password" [type]="showPassword() ? 'text' : 'password'" formControlName="password" autocomplete="current-password" placeholder="Enter your password">
+        <button type="button" (click)="showPassword.update((visible) => !visible)" [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'">{{ showPassword() ? 'Hide' : 'Show' }}</button>
+      </div>
+      @if (form.controls.password.touched && form.controls.password.invalid) {
+        <small class="admin-error">Enter your password to continue.</small>
+      }
+      @if (error()) {
+        <small class="admin-error" role="alert">{{ error() }}</small>
+      }
+      @if (environment.dataSource === 'local') {
+        <div class="demo-warning" role="note"><strong>TEMPORARY · LOCAL MODE ONLY</strong><br>This browser-only password is not secure and will be replaced by JWT authentication when the API is connected.</div>
+      }
+      <button class="admin-primary" type="submit" [disabled]="loading()">{{ loading() ? 'Signing in…' : 'Continue' }} <span>↗</span></button>
+    </form>
+  </section>
+</main>

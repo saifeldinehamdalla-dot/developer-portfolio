@@ -1,0 +1,250 @@
+<main class="cms" [style.--cms-accent]="accent()">
+  <header class="topbar">
+    <a class="brand" routerLink="/" aria-label="Return to portfolio"><span class="brand-mark">a<span>.</span></span><span class="brand-name">{{ store.profile()?.name || 'PORTFOLIO' }} <i>/ CMS</i></span></a>
+    <div class="top-actions">
+      <span class="local-indicator"><i></i> {{ dataSource === 'api' ? 'API CONTENT' : 'LOCAL CONTENT' }}</span>
+      <button class="text-button collapse-button" type="button" (click)="toggleSidebar()" [attr.aria-expanded]="!sidebarCollapsed()" aria-label="Toggle sidebar">{{ sidebarCollapsed() ? 'Expand menu' : 'Collapse menu' }}</button>
+      <button class="icon-button theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-label]="'Switch to ' + (theme.theme() === 'dark' ? 'light' : 'dark') + ' theme'">
+        {{ theme.theme() === 'dark' ? 'Light view' : 'Dark view' }}
+      </button>
+      <button class="text-button" type="button" (click)="signOut()">Sign out</button>
+    </div>
+  </header>
+
+  <div class="layout" [class.sidebar-collapsed]="sidebarCollapsed()">
+    <aside class="rail" aria-label="CMS navigation">
+      <div class="rail-intro"><span class="eyebrow">YOUR WORKSPACE</span><span class="rail-line"></span></div>
+      <nav>
+        <button type="button" [class.active]="view() === 'overview'" (click)="setView('overview')"><span class="nav-number">01</span>Overview</button>
+        <button type="button" [class.active]="view() === 'projects'" (click)="setView('projects')"><span class="nav-number">02</span>Projects <b>{{ store.projects().length }}</b></button>
+        <button type="button" [class.active]="view() === 'skills'" (click)="setView('skills')"><span class="nav-number">03</span>Skills</button>
+        <button type="button" [class.active]="view() === 'inbox'" (click)="setView('inbox')"><span class="nav-number">04</span>Inbox @if (store.unreadCount()) { <b class="unread-count">{{ store.unreadCount() }}</b> }</button>
+        <button type="button" [class.active]="view() === 'media'" (click)="setView('media')"><span class="nav-number">05</span>Media</button>
+        <span class="nav-rule"></span>
+        <button type="button" [class.active]="view() === 'content'" (click)="setView('content')"><span class="nav-number">06</span>Content</button>
+        <button type="button" [class.active]="view() === 'settings'" (click)="setView('settings')"><span class="nav-number">07</span>Settings</button>
+      </nav>
+      <div class="rail-foot"><span class="status-led"></span><span>Saved on this device</span><small>LOCAL-FIRST MODE</small></div>
+    </aside>
+
+    <section class="workspace">
+      <div class="mobile-heading">
+        <span class="eyebrow">INDEPENDENT PRACTICE / CONTENT STUDIO</span>
+        <button class="mobile-menu-button" type="button" (click)="mobileNavOpen.update((open) => !open)" [attr.aria-expanded]="mobileNavOpen()" aria-controls="mobile-cms-nav">{{ mobileNavOpen() ? 'Close' : 'Menu' }}</button>
+      </div>
+      @if (mobileNavOpen()) {
+        <nav id="mobile-cms-nav" class="mobile-drawer" aria-label="CMS navigation">
+          <button type="button" [class.active]="view() === 'overview'" (click)="setView('overview')">Overview</button>
+          <button type="button" [class.active]="view() === 'projects'" (click)="setView('projects')">Projects <span>{{ store.projects().length }}</span></button>
+          <button type="button" [class.active]="view() === 'skills'" (click)="setView('skills')">Skills</button>
+          <button type="button" [class.active]="view() === 'inbox'" (click)="setView('inbox')">Inbox <span>{{ store.unreadCount() }} unread</span></button>
+          <button type="button" [class.active]="view() === 'media'" (click)="setView('media')">Media</button>
+          <button type="button" [class.active]="view() === 'content'" (click)="setView('content')">Content</button>
+          <button type="button" [class.active]="view() === 'settings'" (click)="setView('settings')">Settings</button>
+        </nav>
+      }
+
+      @if (store.loading()) {
+        <div class="loading-state" aria-label="Loading portfolio content">
+          <div class="skeleton-heading"></div><div class="skeleton-row"></div><div class="skeleton-row short"></div><div class="skeleton-grid"><i></i><i></i><i></i></div>
+        </div>
+      } @else if (error()) {
+        <div class="error-state"><span class="eyebrow">A SMALL DETOUR</span><h1>Content didn’t load.</h1><p>{{ error() }}</p><button class="button primary" type="button" (click)="initialize()">Try again</button></div>
+      } @else {
+        @if (view() === 'overview') {
+          <div class="page-heading overview-heading">
+            <div><span class="eyebrow">INDEPENDENT PRACTICE / CONTENT STUDIO</span><h1>Good work,<br><em>well kept.</em></h1><p>Your portfolio is your front door. Keep every detail current, right here on this device.</p></div>
+            <div class="heading-mark"><span>{{ store.profile()?.initials || 'A.' }}</span><i>YOUR<br>STUDIO</i></div>
+          </div>
+          <section class="local-note"><span class="note-icon">↳</span><div><strong>{{ dataSource === 'api' ? 'Your site is connected.' : 'Your content stays close.' }}</strong><p>{{ dataSource === 'api' ? 'Projects, skills, and messages use your API. Profile content and media remain stored in this browser until server endpoints are added.' : 'Edits are saved through your local portfolio storage. Download a backup before moving to another device.' }}</p></div><span class="local-pill"><i></i> {{ dataSource === 'api' ? 'API MODE' : 'LOCAL MODE' }}</span></section>
+          <div class="overview-grid">
+            <article class="metric-panel"><span class="eyebrow">LIVE PROJECTS</span><strong>{{ store.projects().length.toString().padStart(2, '0') }}</strong><button type="button" (click)="setView('projects')">Curate projects <span>↗</span></button><div class="metric-ornament"></div></article>
+            <article class="metric-panel cyan-panel"><span class="eyebrow">SKILLS IN VIEW</span><strong>{{ store.skills().length.toString().padStart(2, '0') }}</strong><button type="button" (click)="setView('skills')">Tune your stack <span>↗</span></button><div class="metric-ornament"></div></article>
+            <article class="metric-panel message-metric"><span class="eyebrow">ALL MESSAGES</span><strong>{{ store.messages().length.toString().padStart(2, '0') }}</strong><button type="button" (click)="setView('inbox')">Open inbox <span>↗</span></button><div class="metric-ornament"></div></article>
+            <article class="metric-panel unread-metric"><span class="eyebrow">UNREAD NOTES</span><strong>{{ store.unreadCount().toString().padStart(2, '0') }}</strong><button type="button" (click)="setView('inbox'); messageFilter.set('unread')">Read new notes <span>↗</span></button><div class="metric-ornament"></div></article>
+          </div>
+          <div class="overview-lower">
+            <section class="panel recent-panel">
+              <div class="section-head"><div><span class="eyebrow">A NOTE FROM OUT THERE</span><h2>Recent messages</h2></div><button class="text-link" type="button" (click)="setView('inbox')">All messages ↗</button></div>
+              @for (message of store.messages().slice(0, 5); track message.id) {
+                <button class="recent-message" type="button" (click)="setView('inbox'); openMessage(message)">
+                  <span class="message-avatar">{{ message.name.slice(0, 1).toUpperCase() }}</span><span class="recent-copy"><strong>{{ message.name }}</strong><small>{{ message.message }}</small></span>
+                  <time>{{ messageDate(message.createdAt) }}</time>@if (!message.isRead) { <i class="unread-dot"></i> }
+                </button>
+              } @empty { <div class="empty-inline"><span>—</span><strong>Quiet inbox, for now.</strong><small>New notes will land here.</small></div> }
+            </section>
+            <aside class="panel quick-panel">
+              <span class="eyebrow">MAKE A QUICK ADD</span><h2>Keep momentum.</h2>
+              <p>Drop a new piece of work into your portfolio without losing your train of thought.</p>
+              <button class="quick-add" type="button" (click)="setView('projects'); openProject()"><span class="quick-symbol">＋</span><span><strong>New project</strong><small>Give a recent build a home</small></span><b>↗</b></button>
+              <button class="quick-add" type="button" (click)="setView('skills'); openSkill()"><span class="quick-symbol skill-symbol">＋</span><span><strong>New skill</strong><small>Add a tool to your toolkit</small></span><b>↗</b></button>
+              <div class="backup-shortcut"><span>Before a big edit?</span><button type="button" (click)="exportBackup()">Download a backup</button></div>
+            </aside>
+          </div>
+        }
+
+        @if (view() === 'projects') {
+          <div class="page-heading compact-heading"><div><span class="eyebrow">02 / SELECTED WORK</span><h1>Projects<span class="heading-period">.</span></h1><p>The builds that tell your story. Drag a project or use its arrow controls to reorder it.</p></div><button class="button primary" type="button" (click)="openProject()">＋ Add project</button></div>
+          <div class="toolbar"><label class="search-field"><span>⌕</span><input aria-label="Search projects" placeholder="Find a project or tag…" [value]="projectSearch()" (input)="setProjectSearch($event)"></label>
+            <div class="view-switch" aria-label="Project layout"><button type="button" [class.selected]="projectMode() === 'cards'" (click)="projectMode.set('cards')" aria-label="Card layout">▦</button><button type="button" [class.selected]="projectMode() === 'table'" (click)="projectMode.set('table')" aria-label="Table layout">☷</button></div>
+          </div>
+          @if (projectEditorOpen()) {
+            <portfolio-modal [title]="editingProject() ? 'Edit project' : 'New project'" (closed)="closeProjectEditor()">
+            <section class="editor-panel">
+              <div class="section-head"><div><span class="eyebrow">PROJECT DETAILS</span><h2>{{ editingProject() ? 'Refine this project' : 'A new piece of work' }}</h2></div><button class="icon-button" type="button" (click)="editingProject.set(null); projectEditorOpen.set(false); projectForm.reset()">Close</button></div>
+              <form [formGroup]="projectForm" (ngSubmit)="saveProject()" class="form-grid">
+                <label>Project title<input formControlName="title" placeholder="e.g. A quieter way to plan"></label>
+                <label>GitHub URL<input formControlName="gitHubUrl" type="url" placeholder="https://github.com/…"></label>
+                <label class="wide-field">Description<textarea formControlName="description" rows="3" placeholder="What did you build, and why?"></textarea></label>
+                <label>Live project URL<input formControlName="liveUrl" type="url" placeholder="https://…"></label>
+                <label>Tags <small>Separate with commas</small><input formControlName="tags" placeholder="Angular, open source"></label>
+                <label class="wide-field">Preview image reference<input formControlName="imageUrl" placeholder="Paste a URL or choose from your media"><span class="field-help">Uploaded images use a media reference and stay in your local library.</span></label>
+                @if (projectForm.controls.imageUrl.value) { <div class="wide-field project-form-preview">@if (imageSrc(projectForm.controls.imageUrl.value)) { <img [src]="imageSrc(projectForm.controls.imageUrl.value)" alt="Selected project preview"> } @else { <span>Preview will appear after a saved image is selected.</span> }</div> }
+                @if (store.media().length) { <label>Choose from media<select [value]="projectForm.controls.imageUrl.value.startsWith('media:') ? projectForm.controls.imageUrl.value : ''" (change)="selectMediaReference($event, 'project')"><option value="">Choose a saved image…</option>@for (asset of store.media(); track asset.id) { @if (asset.mimeType.startsWith('image/')) { <option [value]="'media:' + asset.id">{{ asset.name }}</option> } }</select></label> }
+                <label class="upload-control" (dragover)="allowDrop($event)" (drop)="dropUpload($event, 'project')">Add image <small>Drop or choose PNG, JPG or WebP · up to 2 MB</small><input type="file" accept="image/png,image/jpeg,image/webp" (change)="uploadImage($event, 'project')"></label>
+                <label class="check-row"><input type="checkbox" formControlName="featured"><span>Feature this project on the portfolio</span></label>
+                <div class="form-actions wide-field"><button class="button quiet" type="button" (click)="closeProjectEditor()">Cancel</button><button class="button primary" type="submit" [disabled]="busy()">Save project</button></div>
+              </form>
+            </section>
+            </portfolio-modal>
+          }
+          @if (filteredProjects().length) {
+            <div cdkDropList [cdkDropListData]="store.projects()" [cdkDropListDisabled]="!!projectSearch().trim() || busy()" (cdkDropListDropped)="dropProjects($event)" [class.project-cards]="projectMode() === 'cards'" [class.project-table]="projectMode() === 'table'">
+              @for (project of filteredProjects(); track project.id; let index = $index) {
+                <article class="project-item" cdkDrag [cdkDragData]="project">
+                  <div class="project-image">@if (project.imageUrl && imageSrc(project.imageUrl)) { <img [src]="imageSrc(project.imageUrl)" [alt]="project.title + ' preview'"> } @else { <span>{{ project.title.slice(0, 1) }}</span> }<small>{{ (index + 1).toString().padStart(2, '0') }}</small></div>
+                  <div class="project-details"><div class="project-title-line"><h2>{{ project.title }}</h2>@if (project.featured !== false) { <span class="featured-label">FEATURED</span> }</div><p>{{ project.description }}</p><div class="tag-row">@for (tag of project.tags ?? []; track tag) { <span>{{ tag }}</span> } @empty { <span class="muted-tag">No tags yet</span> }</div></div>
+                  <div class="project-controls"><div class="order-controls"><button type="button" [disabled]="!canMoveProject(project, -1) || busy()" (click)="moveProject(project, -1)" [attr.aria-label]="'Move ' + project.title + ' up'">↑</button><button type="button" [disabled]="!canMoveProject(project, 1) || busy()" (click)="moveProject(project, 1)" [attr.aria-label]="'Move ' + project.title + ' down'">↓</button></div><a [attr.href]="safeLink(project.liveUrl || project.gitHubUrl)" target="_blank" rel="noopener noreferrer" aria-label="Open project link">↗</a><button type="button" (click)="openProject(project)">Edit</button><button class="danger-text" type="button" (click)="deleteProject(project)">Delete</button></div>
+                </article>
+              }
+            </div>
+          } @else { <div class="empty-state"><span class="empty-glyph">∅</span><h2>{{ projectSearch() ? 'No matching projects.' : 'A blank canvas.' }}</h2><p>{{ projectSearch() ? 'Try a different title or tag.' : 'Add a project when you’re ready to show what you’ve been building.' }}</p>@if (!projectSearch()) { <button class="button primary" type="button" (click)="openProject()">Add your first project</button> }</div> }
+        }
+
+        @if (view() === 'skills') {
+          <div class="page-heading compact-heading"><div><span class="eyebrow">03 / YOUR TOOLKIT</span><h1>Skills<span class="heading-period">.</span></h1><p>Make the shape of your practice easy to understand at a glance.</p></div><button class="button primary" type="button" (click)="openSkill()">＋ Add skill</button></div>
+          <div class="toolbar"><label class="search-field"><span>⌕</span><input aria-label="Search skills" placeholder="Search your toolkit…" [value]="skillSearch()" (input)="setSkillSearch($event)"></label><span class="toolbar-note">{{ filteredSkills().length }} skills in view</span></div>
+          @if (skillEditorOpen()) {
+            <portfolio-modal [title]="editingSkill() ? 'Edit skill' : 'New skill'" (closed)="closeSkillEditor()">
+            <section class="editor-panel skill-editor"><div class="section-head"><div><span class="eyebrow">SKILL DETAILS</span><h2>{{ editingSkill() ? 'Tune this skill' : 'Add to your toolkit' }}</h2></div><button class="icon-button" type="button" (click)="closeSkillEditor()">Close</button></div>
+              <form [formGroup]="skillForm" (ngSubmit)="saveSkill()" class="form-grid">
+                <label>Skill name<input formControlName="name" placeholder="TypeScript"></label><label>Level<input formControlName="level" placeholder="Advanced"></label>
+                <label>Category<select formControlName="category"><option>Frontend</option><option>Backend</option><option>Database</option><option>Tools</option><option>Other</option></select></label>
+                <label>Proficiency <span class="range-value">{{ skillForm.controls.percentage.value }}%</span><input type="range" min="0" max="100" formControlName="percentage"></label>
+                <div class="skill-preview wide-field"><span class="eyebrow">LIVE CARD PREVIEW</span><div><strong>{{ skillForm.controls.name.value || 'Your skill' }}</strong><span>{{ skillForm.controls.level.value || 'Level' }} · {{ skillForm.controls.category.value }}</span></div><i><b [style.width.%]="skillForm.controls.percentage.value"></b></i></div>
+                <div class="form-actions wide-field"><button class="button quiet" type="button" (click)="closeSkillEditor()">Cancel</button><button class="button primary" type="submit" [disabled]="busy()">Save skill</button></div>
+              </form>
+            </section>
+            </portfolio-modal>
+          }
+          @if (filteredSkills().length) {
+            <div cdkDropList [cdkDropListData]="store.skills()" [cdkDropListDisabled]="!!skillSearch().trim() || busy()" (cdkDropListDropped)="dropSkills($event)" class="skill-list">
+              @for (skill of filteredSkills(); track skill.id; let index = $index) {
+                <article class="skill-row" cdkDrag [cdkDragData]="skill"><div class="skill-index">{{ (index + 1).toString().padStart(2, '0') }}</div><div class="skill-main"><div><h2>{{ skill.name }}</h2><span>{{ skill.category || 'Other' }}</span></div><div class="skill-meter"><i><b [style.width.%]="skill.percentage ?? 72"></b></i><small>{{ skill.level }} <strong>{{ skill.percentage ?? 72 }}%</strong></small></div></div><div class="row-tools"><button type="button" [disabled]="!canMoveSkill(skill, -1) || busy()" (click)="moveSkill(skill, -1)" [attr.aria-label]="'Move ' + skill.name + ' up'">↑</button><button type="button" [disabled]="!canMoveSkill(skill, 1) || busy()" (click)="moveSkill(skill, 1)" [attr.aria-label]="'Move ' + skill.name + ' down'">↓</button><button type="button" (click)="openSkill(skill)">Edit</button><button class="danger-text" type="button" (click)="deleteSkill(skill)">Delete</button></div></article>
+              }
+            </div>
+          } @else { <div class="empty-state"><span class="empty-glyph">∅</span><h2>No skills in this view.</h2><p>Add a skill or adjust your search.</p><button class="button primary" type="button" (click)="openSkill()">Add a skill</button></div> }
+        }
+
+        @if (view() === 'inbox') {
+          <div class="page-heading compact-heading"><div><span class="eyebrow">04 / NOTES FROM THE WORLD</span><h1>Inbox<span class="heading-period">.</span></h1><p>A little human connection, kept in one tidy place.</p></div><div class="inbox-count"><strong>{{ store.unreadCount().toString().padStart(2, '0') }}</strong><span>UNREAD</span></div></div>
+          <div class="inbox-toolbar"><div class="filter-tabs"><button type="button" [class.selected]="messageFilter() === 'all'" (click)="messageFilter.set('all')">All <span>{{ store.messages().length }}</span></button><button type="button" [class.selected]="messageFilter() === 'unread'" (click)="messageFilter.set('unread')">Unread <span>{{ store.unreadCount() }}</span></button><button type="button" [class.selected]="messageFilter() === 'read'" (click)="messageFilter.set('read')">Read</button></div><label class="search-field"><span>⌕</span><input aria-label="Search inbox" placeholder="Search notes…" [value]="messageSearch()" (input)="setMessageSearch($event)"></label></div>
+          @if (selectedMessageIds().length) { <div class="bulk-bar"><span>{{ selectedMessageIds().length }} selected</span><button type="button" (click)="bulkRead(true)">Mark read</button><button type="button" (click)="bulkRead(false)">Mark unread</button><button class="danger-text" type="button" (click)="bulkDeleteMessages()">Delete selected</button></div> }
+          <div class="inbox-layout">
+            <section class="message-list" aria-label="Messages">
+              <div class="list-select-all"><label><input type="checkbox" [checked]="filteredMessages().length > 0 && selectedMessageIds().length === filteredMessages().length" (change)="selectVisibleMessages($event)"> Select all in view</label><span>NEWEST FIRST</span></div>
+              @if (store.messagesLoading()) {
+                <div class="message-loading" aria-label="Loading messages">
+                  <span class="skeleton-row"></span><span class="skeleton-row"></span><span class="skeleton-row"></span>
+                </div>
+              } @else if (store.messagesLoaded()) {
+                @for (message of filteredMessages(); track message.id) {
+                  <article class="message-row" [class.message-unread]="!message.isRead" [class.message-active]="activeMessage()?.id === message.id">
+                    <label class="message-check"><input type="checkbox" [checked]="selectedMessageIds().includes(message.id)" (change)="toggleMessage(message)" [attr.aria-label]="'Select message from ' + message.name"></label>
+                    <button class="message-summary" type="button" (click)="openMessage(message)"><span class="message-avatar">{{ message.name.slice(0, 1).toUpperCase() }}</span><span class="message-copy"><strong>{{ message.name }}</strong><small>{{ message.message }}</small></span><time [attr.title]="messageDate(message.createdAt)">{{ message.createdAt | relativeTime }}</time></button>
+                    @if (!message.isRead) { <i class="unread-dot"></i> }
+                  </article>
+                } @empty { <div class="empty-state inbox-empty"><span class="empty-glyph">∅</span><h2>No notes here.</h2><p>When someone writes, it’ll be waiting in this inbox.</p></div> }
+              }
+            </section>
+            <aside class="message-detail">
+              @if (activeMessage(); as message) {
+                <div class="detail-top"><span class="eyebrow">MESSAGE DETAIL</span><button class="icon-button" type="button" (click)="activeMessage.set(null)" aria-label="Close message">×</button></div>
+                <div class="detail-person"><span class="message-avatar large-avatar">{{ message.name.slice(0, 1).toUpperCase() }}</span><div><h2>{{ message.name }}</h2><a [attr.href]="emailHref(message.email)">{{ message.email }}</a></div></div>
+                <time class="detail-date">{{ messageDate(message.createdAt) }}</time><div class="message-body">{{ message.message }}</div>
+                <div class="detail-actions"><a class="button primary" [href]="replyHref(message.email)">Reply by email ↗</a><button class="button quiet" type="button" (click)="toggleMessageRead(message)">{{ message.isRead ? 'Mark unread' : 'Mark read' }}</button><button class="button quiet" type="button" (click)="deleteMessage(message)">Delete note</button></div>
+              } @else { <div class="detail-placeholder"><span>↙</span><strong>Choose a note</strong><p>Open a message to read the full note. It’ll be marked as read automatically.</p></div> }
+            </aside>
+          </div>
+        }
+
+        @if (view() === 'media') {
+          <div class="page-heading compact-heading"><div><span class="eyebrow">05 / YOUR VISUAL LIBRARY</span><h1>Media<span class="heading-period">.</span></h1><p>A small, local library for the images your portfolio uses.</p></div><label class="button primary upload-button">＋ Add image<input type="file" accept="image/png,image/jpeg,image/webp" (change)="uploadImage($event)"></label></div>
+          <div class="media-guidance" (dragover)="allowDrop($event)" (drop)="dropUpload($event)" role="region" aria-label="Drop an image to add it to the media library"><span>LOCAL LIBRARY</span><p>Drop an image here, or use Add image. PNG, JPG, or WebP · max 2 MB. CV PDFs are accepted from the Content editor up to 5 MB.</p></div>
+          @if (store.media().length) {
+            <div class="media-grid">
+              @for (asset of store.media(); track asset.id) {
+                <article class="media-card" [class.media-selected]="selectedMedia()?.id === asset.id" (click)="selectedMedia.set(asset)">
+                  <button type="button" class="media-preview" (click)="selectedMedia.set(asset)" [attr.aria-label]="'Preview ' + asset.name">@if (asset.mimeType.startsWith('image/')) { <img [src]="imageSrc('media:' + asset.id)" [alt]="asset.name"> } @else { <span class="document-preview">PDF</span> }<span>OPEN PREVIEW</span></button>
+                  <div class="media-meta"><strong>{{ asset.name }}</strong><small>{{ fileSize(asset.size) }} <i>·</i> {{ asset.mimeType.replace('image/', '').replace('application/', '').toUpperCase() }}</small><code>media:{{ asset.id }}</code></div>
+                  <div class="media-actions"><button type="button" (click)="renameMedia(asset); $event.stopPropagation()">Rename</button><button type="button" (click)="copyReference(asset); $event.stopPropagation()">Copy ref</button><button class="danger-text" type="button" (click)="deleteMedia(asset); $event.stopPropagation()">Delete</button></div>
+                </article>
+              }
+            </div>
+          } @else { <div class="empty-state"><span class="empty-glyph">▧</span><h2>Your library is ready.</h2><p>Upload a project image or profile photo to keep it close at hand.</p><label class="button primary upload-button">Choose an image<input type="file" accept="image/png,image/jpeg,image/webp" (change)="uploadImage($event)"></label></div> }
+          @if (selectedMedia(); as asset) { <div class="media-preview-dock">@if (asset.mimeType.startsWith('image/')) { <img [src]="imageSrc('media:' + asset.id)" [alt]="asset.name"> } @else { <span class="document-preview">PDF</span> }<div><span class="eyebrow">SELECTED ASSET</span><strong>{{ asset.name }}</strong><small>Used as <code>media:{{ asset.id }}</code></small></div><button class="icon-button" type="button" (click)="copyReference(asset)">Copy reference</button><button class="icon-button" type="button" (click)="selectedMedia.set(null)" aria-label="Close preview">×</button></div> }
+        }
+
+        @if (view() === 'content') {
+          <div class="page-heading compact-heading"><div><span class="eyebrow">06 / YOUR PUBLIC VOICE</span><h1>Content<span class="heading-period">.</span></h1><p>Shape the introduction, links, and search preview visitors meet first.</p></div><button class="button primary" type="button" (click)="saveProfile()" [disabled]="busy()">Save profile</button></div>
+          @if (store.profile(); as profile) {
+            <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="content-layout">
+              <div class="content-main">
+                <section class="editor-panel"><div class="section-head"><div><span class="eyebrow">THE INTRODUCTION</span><h2>Who you are</h2></div><span class="section-index">A / 01</span></div>
+                  <div class="form-grid"><label>Name<input formControlName="name"></label><label>Initials<input formControlName="initials"></label><label>Current role<input formControlName="role"></label><label>Location<input formControlName="location"></label><label class="wide-field">Headline<input formControlName="headline" placeholder="A sentence that sounds like you"></label><label class="wide-field">Tagline<input formControlName="tagline"></label><label class="wide-field">About<textarea rows="6" formControlName="bio"></textarea></label><label>Typing roles <small>One role per line</small><textarea rows="4" formControlName="roles"></textarea></label><label>Availability<input formControlName="availability"></label><label>Email<input type="email" formControlName="email"></label><label>Years of experience<input formControlName="yearsExperience"></label><label>Projects count label<input formControlName="projectsCount"></label></div>
+                </section>
+                <section class="editor-panel"><div class="section-head"><div><span class="eyebrow">LINKS THAT TRAVEL</span><h2>Social & profile links</h2></div><span class="section-index">A / 02</span></div>
+                  <div class="form-grid"><label>GitHub URL<input formControlName="github" type="url"></label><label>LinkedIn URL<input formControlName="linkedin" type="url"></label>
+                    <label class="wide-field">Profile photo reference<input formControlName="photoUrl" placeholder="https://… or media:id"><span class="field-help">Upload a supported image and assign the resulting reference.</span></label>@if (store.media().length) { <label>Choose profile image<select [value]="profileForm.controls.photoUrl.value.startsWith('media:') ? profileForm.controls.photoUrl.value : ''" (change)="selectMediaReference($event, 'photo')"><option value="">Choose a saved image…</option>@for (asset of store.media(); track asset.id) { @if (asset.mimeType.startsWith('image/')) { <option [value]="'media:' + asset.id">{{ asset.name }}</option> } }</select></label> }<label class="upload-control" (dragover)="allowDrop($event)" (drop)="dropUpload($event, 'photo')">Choose profile image<small>Drop or choose PNG, JPG or WebP · max 2 MB</small><input type="file" accept="image/png,image/jpeg,image/webp" (change)="uploadImage($event, 'photo')"></label>
+                    <label class="wide-field">CV / resume link<input formControlName="resumeUrl" placeholder="External URL or saved file reference"></label>@if (store.media().length) { <label>Choose CV file<select [value]="profileForm.controls.resumeUrl.value.startsWith('media:') ? profileForm.controls.resumeUrl.value : ''" (change)="selectMediaReference($event, 'resume')"><option value="">Choose a saved file…</option>@for (asset of store.media(); track asset.id) { <option [value]="'media:' + asset.id">{{ asset.name }} · {{ asset.mimeType.replace('image/', '').replace('application/', '') }}</option> }</select></label> }<label class="upload-control">Upload CV<small>PDF up to 5 MB</small><input type="file" accept="application/pdf" (change)="uploadImage($event, 'resume')"></label>
+                    <label class="wide-field">Other social links <small>One per line, formatted label | https://…</small><textarea rows="3" formControlName="otherSocialLinks" placeholder="Mastodon | https://…"></textarea></label>
+                  </div>
+                </section>
+                <section class="editor-panel"><div class="section-head"><div><span class="eyebrow">SEARCH PREVIEW</span><h2>Search engine details</h2></div><span class="section-index">A / 03</span></div><div class="form-grid"><label class="wide-field">SEO title<input formControlName="seoTitle" maxlength="70"></label><label class="wide-field">Meta description<textarea rows="3" formControlName="seoDescription" maxlength="180"></textarea></label></div><div class="seo-preview"><small>SEARCH RESULT PREVIEW</small><strong>{{ profileForm.controls.seoTitle.value || profile.name }}</strong><span>{{ profileForm.controls.seoDescription.value || 'Your portfolio description will appear here.' }}</span></div></section>
+                <div class="sticky-save"><span>Portfolio profile</span><button class="button primary" type="submit" [disabled]="busy()">Save changes</button></div>
+              </div>
+              <aside class="content-aside"><div class="profile-preview">@if (profileForm.controls.photoUrl.value && imageSrc(profileForm.controls.photoUrl.value); as photo) { <img [src]="photo" alt="Profile preview"> } @else { <span>{{ profileForm.controls.initials.value || 'A.' }}</span> }<small>PROFILE PREVIEW</small><h2>{{ profileForm.controls.name.value || 'Your name' }}</h2><p>{{ profileForm.controls.role.value || 'Your role' }}</p></div><div class="aside-note"><span>TIP / 01</span><p>Keep the headline specific. A clear point of view is more memorable than a list of titles.</p></div></aside>
+            </form>
+          }
+        }
+
+        @if (view() === 'settings') {
+          <div class="page-heading compact-heading"><div><span class="eyebrow">07 / THE WAY IT FEELS</span><h1>Settings<span class="heading-period">.</span></h1><p>Set the tone of your portfolio and keep your local studio secure.</p></div></div>
+          <div class="settings-layout">
+            <section class="editor-panel"><div class="section-head"><div><span class="eyebrow">DISPLAY & VISIBILITY</span><h2>Make it yours</h2></div><span class="section-index">P / 01</span></div>
+              <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()">
+                <label class="color-setting">Accent color <span class="color-picker"><input type="color" formControlName="accentColor" (input)="setAccentColor($event)"><code>{{ settingsForm.controls.accentColor.value }}</code></span></label>
+                <div class="section-visibility"><span class="eyebrow">VISIBLE PORTFOLIO SECTIONS</span><label><input type="checkbox" formControlName="about"><span>About</span><small>Introduction and biography</small></label><label><input type="checkbox" formControlName="skills"><span>Skills</span><small>Your toolkit and experience</small></label><label><input type="checkbox" formControlName="projects"><span>Projects</span><small>Selected work</small></label><label><input type="checkbox" formControlName="contact"><span>Contact</span><small>Ways to get in touch</small></label></div>
+                <label class="setting-select">Default portfolio theme<select formControlName="defaultTheme"><option value="dark">Dark glass</option><option value="light">Light glass</option></select></label>
+                <p class="field-help">This is the portfolio’s saved default. Use the top bar to switch your current view.</p>
+                <div class="form-actions"><button class="button primary" type="submit" [disabled]="busy()">Save display settings</button></div>
+              </form>
+            </section>
+          @if (dataSource === 'local') {
+          <section class="editor-panel password-panel"><div class="section-head"><div><span class="eyebrow">LOCAL ADMIN ACCESS</span><h2>Change password</h2></div><span class="section-index">P / 02</span></div>
+              <p class="section-description">Update the password for this local admin account. Choose at least 8 characters you can remember.</p>
+              <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="form-stack"><label>Current password<input type="password" formControlName="currentPassword" autocomplete="current-password"></label><label>New password<input type="password" formControlName="newPassword" autocomplete="new-password"></label><label>Confirm new password<input type="password" formControlName="confirmPassword" autocomplete="new-password"></label><button class="button primary" type="submit" [disabled]="busy()">Update password</button></form>
+            </section>
+          } @else {
+            <section class="editor-panel password-panel"><div class="section-head"><div><span class="eyebrow">API AUTHENTICATION</span><h2>Managed by your server</h2></div><span class="section-index">P / 02</span></div><p class="section-description">Password changes are not part of the current API contract. Update admin credentials through your server-side authentication provider.</p></section>
+          }
+            <section class="editor-panel backup-panel"><div class="section-head"><div><span class="eyebrow">A COPY, JUST IN CASE</span><h2>Backups & restore</h2></div><span class="section-index">P / 03</span></div><p class="section-description">A backup includes your projects, skills, messages, profile, and media. Restore replaces all current content.</p><div class="backup-actions"><button class="button primary" type="button" (click)="exportBackup()" [disabled]="busy()">Download JSON backup</button><label class="button quiet upload-button">Choose backup file<input type="file" accept="application/json,.json" (change)="importBackup($event)"></label></div><p class="field-help">Restore validates the file and asks for confirmation before replacing anything.</p></section>
+          </div>
+        }
+      }
+      <footer class="workspace-foot"><span>YOUR WORK, YOUR DEVICE.</span><span>Make a backup before your next big edit <button type="button" (click)="exportBackup()">Download JSON ↗</button></span></footer>
+    </section>
+  </div>
+
+  @if (busy()) { <div class="save-indicator" role="status"><i></i> Saving locally…</div> }
+</main>
